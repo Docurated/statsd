@@ -152,6 +152,14 @@ describe Statsd do
     end
   end
 
+  describe '#timer' do
+    it "should format the message according to the statsd spec" do
+      timer = @statsd.timer('foobar').start
+      timer.stop
+      @socket.recv.must_equal ['foobar:0|ms']
+    end
+  end
+
   describe "#sampled" do
     describe "when the sample rate is 1" do
       before { class << @statsd; def rand; raise end; end }

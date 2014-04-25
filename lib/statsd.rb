@@ -209,6 +209,23 @@ class Statsd
     end
   end
 
+  class Timer
+    def initialize(stat, statsd, sample_rate = 1)
+      @stat = stat
+      @statsd = statsd
+      @sample_rate = sample_rate
+    end
+
+    def start
+      @start_time = Time.now
+      self
+    end
+
+    def stop
+      @statsd.timing(@stat, ((Time.now - @start_time) * 1000).round, @sample_rate)
+    end
+  end
+
   # A namespace to prepend to all statsd calls.
   attr_reader :namespace
 
@@ -353,6 +370,14 @@ class Statsd
     result = yield
     timing(stat, ((Time.now - start) * 1000).round, sample_rate)
     result
+  end
+
+  def timer(stat, sample_rate = 1)
+    Timer.new(stat, self, sample_rate)
+  end
+
+  def started_timer(stat, sample_rate = 1)
+    timer(stat, sample_rate).start
   end
 
   # Creates and yields a Batch that can be used to batch instrument reports into
